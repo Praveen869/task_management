@@ -42,9 +42,9 @@ The **Smart Task Management System** is designed to help users organize their da
 ## 📸 Screenshots
 *(Add your project screenshots here)*
 
-| Dashboard | Task Management |
+| Landing Page | Task Dashboard |
 | :---: | :---: |
-| ![Dashboard Placeholder](https://via.placeholder.com/400x250?text=Dashboard+UI) | ![Task UI Placeholder](https://via.placeholder.com/400x250?text=Task+Management) |
+| ![Landing Page](image.png) | ![Task Dashboard](image2.png) |
 
 ## 📁 Folder Structure
 ```text

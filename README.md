@@ -68,8 +68,8 @@ task_management/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/task-management.git
-   cd task-management
+   git clone https://github.com/Praveen869/task_management.git
+   cd task_management
    ```
 
 2. **Create a virtual environment**:
@@ -147,9 +147,6 @@ The analytics engine leverages **Pandas** and **NumPy**:
 - [ ] Drag-and-drop task reordering.
 
 ## 👤 Author
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your Profile](https://linkedin.com/in/yourprofile)
-
----
-*Developed with ❤️ for Task Management Excellence.*
+**Praveen**
+- GitHub: [Praveen869](https://github.com/Praveen869)
+- LinkedIn: [Praveen Kumar](https://linkedin.com/in/praveen-kumar-b-814339275)

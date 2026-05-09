@@ -1,0 +1,8 @@
+flask
+flask-socketio
+psycopg2-binary
+pandas
+numpy
+flask-bcrypt
+python-dotenv
+eventlet

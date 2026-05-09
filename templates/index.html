@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TaskFlow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <i data-lucide="layout-grid" style="color: var(--primary);"></i>
+                <div class="logo">TaskFlow</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div class="user-profile">
+                    <div class="avatar">{{ current_user.username[:1].upper() }}</div>
+                    <span style="font-weight: 600; font-size: 0.95rem;">{{ current_user.username }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" 
+                   style="color: var(--danger); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                   <i data-lucide="log-out" style="width: 16px;"></i> Logout
+                </a>
+            </div>
+        </header>
+
+        <div class="stats-panel">
+            <div class="glass-card stat-card">
+                <div class="stat-value" id="stat-total">{{ stats.total }}</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-value" id="stat-completion">{{ stats.completion_rate }}%</div>
+                <div class="stat-label">Completion Rate</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-value" id="stat-pending">{{ stats.status_counts.get('pending', 0) }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-value" id="stat-in-progress">{{ stats.status_counts.get('in_progress', 0) }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-value" id="stat-avg-tasks">{{ stats.avg_tasks_per_day }}</div>
+                <div class="stat-label">Avg/Day</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-value" style="font-size: 1.25rem; margin-top: 1rem;" id="stat-priority">
+                    H: {{ stats.priority_counts.get('high', 0) }} |
+                    M: {{ stats.priority_counts.get('medium', 0) }} |
+                    L: {{ stats.priority_counts.get('low', 0) }}
+                </div>
+                <div class="stat-label">Priority</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <aside class="sidebar">
+                <div class="sidebar-content">
+                    <div class="glass-card" style="padding: 2rem;">
+                        <h2 class="section-title">
+                            <i data-lucide="plus-circle" style="color: var(--primary);"></i>
+                            Create Task
+                        </h2>
+                        <form id="task-form">
+                            <div class="form-group">
+                                <label>Task Title</label>
+                                <input type="text" id="task-title" required placeholder="What needs to be done?">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="task-desc" rows="3" placeholder="Add some context..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Priority Level</label>
+                                <select id="task-priority">
+                                    <option value="low">Low Priority</option>
+                                    <option value="medium" selected>Medium Priority</option>
+                                    <option value="high">High Priority</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Initial Status</label>
+                                <select id="task-status">
+                                    <option value="pending" selected>Pending</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                            <button type="submit">
+                                <i data-lucide="send" style="width: 18px;"></i>
+                                Create Task
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <h2 class="section-title">
+                    <i data-lucide="list-todo" style="color: var(--accent);"></i>
+                    Your Tasks
+                </h2>
+                <div id="task-list" class="task-list">
+                    {% for task in tasks|sort(attribute='created_at', reverse=True) %}
+                    <div id="task-{{ task.id }}"
+                        class="glass-card task-item {{ 'completed' if task.status == 'completed' else '' }}"
+                        data-description="{{ task.description }}">
+                        <div class="task-content">
+                            <h3>{{ task.title }}</h3>
+                            <p class="task-desc-text">{{ task.description or 'No description provided.' }}</p>
+                            <div class="task-meta">
+                                <span class="badge badge-{{ task.priority|lower }}">{{ task.priority }}</span>
+                                <span class="status-badge">{{ task.status }}</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button
+                                onclick="updateTaskStatus(`{{ task.id }}`, `{% if task.status == 'completed' %}pending{% else %}completed{% endif %}`)"
+                                class="btn-icon complete" title="Toggle Status">
+                                <i data-lucide="{% if task.status == 'completed' %}rotate-ccw{% else %}check{% endif %}"></i>
+                            </button>
+                            <button onclick="deleteTask(`{{ task.id }}`)" class="btn-icon delete" title="Delete Task">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div id="empty-state" class="glass-card task-item"
+                        style="justify-content: center; text-align: center; color: var(--text-muted); padding: 4rem;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                            <i data-lucide="clipboard-list" style="width: 48px; height: 48px; opacity: 0.2;"></i>
+                            <p>You have no tasks yet. Time to be productive!</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/socket.js') }}"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
